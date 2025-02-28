@@ -53,6 +53,21 @@ export const login = async (req, res) => {
             ]    
         });
 
+        if (!user) {
+            return res.status(404).send({
+                success: false,
+                message: 'Invalida user o password'
+            });
+        }
+
+        const isPasswordValid = await checkPassword(user.password, password);
+        if (!isPasswordValid) {
+            return res.status(401).send({
+                success: false,
+                message: 'Invalida user o password'
+            });
+        }
+
         if(user && await checkPassword(user.password, password)){
             let loggerUser={
                 uid: user._id,
@@ -111,23 +126,34 @@ export const updateRole = async (req, res) => {
 }
 
 /*Create admin default */
-export const createAdminDefault = async() => {
+export const createAdminDefault = async (req, res) => {
     try {
-        let adminExist = await User.findOne({name: 'Admin'});
+        let adminExist = await User.findOne({name: process.env.NAME})
+
+        if(adminExist){
+            return res.status(200).send({
+                success: true,
+                message: "Admin already exist",
+            })
+        }
 
         if(!adminExist){
             let admin = new User({
-                name: 'Admin',
-                lastname: 'Primero',
-                email: 'admin@gmail.com',
-                username: 'admin',
-                password: 'Admin123',
-                role: 'ADMIN'
+                name: process.env.NAME,
+                lastname: process.env.LASTNAME,
+                email: process.env.EMAIL,
+                username: process.env.BD_USERNAME,
+                password: process.env.PASSWORD,
+                role: process.env.ROLE
             })
             admin.password = await encrypt(admin.password);
             await admin.save();
         }
     } catch (error) {
         console.error(error);
+        return res.status(500).send({
+            success: false,
+            message:'Generar error with generate admin',error
+        })
     }
 }
