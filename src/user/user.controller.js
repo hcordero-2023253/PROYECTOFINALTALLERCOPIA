@@ -126,16 +126,16 @@ export const updateRole = async (req, res) => {
 }
 
 /*Create admin default */
-export const createAdminDefault = async (req, res) => {
+export const createAdminDefault = async () => {
     try {
         let adminExist = await User.findOne({name: process.env.NAME})
 
         if(adminExist){
-            return res.status(200).send({
-                success: true,
-                message: "Admin already exist",
-            })
+            return console.log("Admin already exist");
+            
         }
+
+        
 
         if(!adminExist){
             let admin = new User({
@@ -149,11 +149,8 @@ export const createAdminDefault = async (req, res) => {
             admin.password = await encrypt(admin.password);
             await admin.save();
         }
+        console.log("Admin created")
     } catch (error) {
         console.error(error);
-        return res.status(500).send({
-            success: false,
-            message:'Generar error with generate admin',error
-        })
     }
 }
